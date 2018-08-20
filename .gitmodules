@@ -1,0 +1,6 @@
+[submodule "my-node-bootstrap"]
+	path = my-node-bootstrap
+	url = https://github.com/teemukoivisto/my-node-bootstrap.git
+[submodule "my-react-bootstrap"]
+	path = my-react-bootstrap
+	url = https://github.com/teemukoivisto/my-react-bootstrap.git
