@@ -1,0 +1,39 @@
+version: '3'
+services:
+  my_react_bootstrap:
+    image: teemukoivisto/my-react-bootstrap:0.1.0
+    ports:
+      - 9800:80
+  my_node_bootstrap:
+    image: teemukoivisto/my-node-bootstrap:0.1.0
+    ports:
+      - 9600:8600 
+    environment:
+      NODE_ENV: production
+      PORT: 8600
+      LOG_LEVEL: info
+      JWT_SECRET: verylongrandomstring
+      DB_HOST: host.docker.internal
+      DB_PORT: 5600
+      DB_USER: pg-user
+      DB_PASSWORD: my-pg-password
+      DB_NAME: my_node_db_local
+  my_flyway_migration:
+    image: teemukoivisto/my-node-bootstrap:0.1.0
+    command: ./db/migrate.sh
+    depends_on:
+      - my_postgres
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: 5600
+      DB_USER: pg-user
+      DB_PASSWORD: my-pg-password
+      DB_NAME: my_node_db_local
+  my_postgres:
+    image: postgres:10.5
+    environment:
+      POSTGRES_PASSWORD: my-pg-password
+      POSTGRES_USER: pg-user
+      POSTGRES_DB: my_node_db_local
+    ports:
+      - 5600:5432
