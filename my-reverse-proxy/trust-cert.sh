@@ -8,5 +8,6 @@ if [ -z "$OS" ]; then
 fi
 
 if [ "$OS" = "macos" ]; then
-  sudo security add-trusted-cert -d -r trustRoot -p ssl -k /Library/Keychains/System.keychain localhost.crt
+  #sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain localhost.crt
+  sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain localhost.crt
 fi
