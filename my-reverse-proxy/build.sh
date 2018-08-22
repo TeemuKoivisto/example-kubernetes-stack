@@ -2,7 +2,7 @@
 
 NAMESPACE="teemukoivisto"
 IMAGE_NAME="my-reverse-proxy"
-VERSION_TAG="0.1.0"
+VERSION_TAG="latest"
 
 IMAGE="${NAMESPACE}"/"${IMAGE_NAME}":"${VERSION_TAG}"
 

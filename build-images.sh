@@ -5,6 +5,3 @@ cd ./my-react-bootstrap
 
 cd ../my-node-bootstrap
 ./build.sh
-
-cd ../my-reverse-proxy
-./build.sh
