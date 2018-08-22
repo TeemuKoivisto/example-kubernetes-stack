@@ -23,3 +23,5 @@ Running `./trust-cert.sh macos` should it. If however it doesn't you can do it m
 3) Double click the added key and open the Trust Settings
 4) Set the top most option to "Always Trust" (which should make all the lower ones Always Trust aswell)
 5) That should do it, rebuild if you haven't done already with `docker-compose build` and open the app in https://localhost:9443
+
+NOTE: Because of stuff, mainly of the Strict-Transport-Security in the `nginx.conf`, Chrome tries to now send all requests to localhost through HTTPS. This is kinda awkward when starting other dev-apps to your localhost... To remove it from Chrome go to `chrome://net-internals/#hsts`, input `localhost` to "Delete domain security policies" and delete it from Chrome's memory. Detailed instructions here https://stackoverflow.com/questions/25277457/google-chrome-redirecting-localhost-to-https.
