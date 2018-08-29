@@ -39,7 +39,7 @@ spec:
         - name: PG_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: my-pg-password
+              name: my-postgres-secret
               key: password
         ports:
         - containerPort: 5432
@@ -50,4 +50,4 @@ spec:
       volumes:
       - name: postgres-persistent-storage
         persistentVolumeClaim:
-          claimName: postgres-pv-claim
+          claimName: my-postgres-pvc

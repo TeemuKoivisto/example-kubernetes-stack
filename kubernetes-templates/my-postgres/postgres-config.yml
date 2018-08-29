@@ -2,6 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: my-postgres-config
+  labels:
+    app: my-postgres
+    project: example-kubernetes-stack
 data:
   POSTGRES_USER: pg-user
   POSTGRES_DB: my_postgres_db
