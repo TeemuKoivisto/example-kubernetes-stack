@@ -14,6 +14,10 @@ You don't have to create your own dhparam-key as I've included pre-made one as I
 
 After that you should then make your OS to trust your local certificate that I've only done with my macOS.
 
+### Trusting the SSL certificate on any OS in Chrome
+
+If you use this `chrome://flags/#allow-insecure-localhost` setting to Enabled you can probably avoid messing around with your System Settings completely. Which is pretty neat.
+
 ### Adding your SSL certificate to your trusted keys in macOS
 
 Running `./trust-cert.sh macos` should it. If however it doesn't you can do it manually:

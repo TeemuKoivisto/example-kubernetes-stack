@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-node-bootstrap-deployment
+  labels:
+    app: my-node-bootstrap
+    project: example-kubernetes-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-node-bootstrap
+  template:
+    metadata:
+      labels:
+        app: my-node-bootstrap
+    spec:
+      containers:
+      - name: my-node-bootstrap-image
+        image: teemukoivisto/my-node-bootstrap:0.3.1
+        # imagePullPolicy: Always
+        ports:
+        - containerPort: 8600
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: 8600
+        - name: LOG_LEVEL
+          value: "info"
+        - name: JWT_SECRET
+          value: "verylongrandomstring"
+        - name: DB_HOST
+          value: "host.docker.internal"
+        - name: DB_PORT
+          value: 5600
+        - name: DB_USER
+          value: "pg-user"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: my-pg-password
+              key: password
+        - name: DB_NAME
+          value: "my_postgres_db"

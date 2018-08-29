@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-react-bootstrap-deployment
+  labels:
+    app: my-react-bootstrap
+    project: example-kubernetes-stack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-react-bootstrap
+  template:
+    metadata:
+      labels:
+        app: my-react-bootstrap
+    spec:
+      containers:
+      - name: my-react-bootstrap-image
+        image: teemukoivisto/my-react-bootstrap:0.3.1
+        ports:
+        - containerPort: 80

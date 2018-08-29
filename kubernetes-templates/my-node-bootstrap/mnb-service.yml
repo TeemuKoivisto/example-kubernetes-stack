@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-node-bootstrap-svc
+  labels:
+    app: my-node-bootstrap
+    project: example-kubernetes-stack
+spec:
+  type: LoadBalancer
+  selector:
+    app: my-node-bootstrap
+  ports:
+  - protocol: TCP
+    port: 8800
+    nodePort: 30001

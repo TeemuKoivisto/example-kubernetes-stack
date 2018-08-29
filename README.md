@@ -10,6 +10,36 @@ Utilizes my bootstrap projects as a basis:
 
 You should have Docker, Kubernetes and kubectl installed locally. Also for developing the backend and frontend apps you should install Node.js.
 
+## How to install with minikube and kubectl
+
+1) First install `kubectl` and `minikube`. Here's a guide: https://kubernetes.io/docs/tutorials/hello-minikube/.
+`kubectl` is a commandline tool for communicating with your Kubernetes Master Node:
+> `kubectl` is a command line interface for running commands against Kubernetes clusters.
+
+Minikube is a tool that
+> runs a single-node Kubernetes cluster inside a VM on your laptop
+
+It comes with Docker Engine pre-installed. That Docker Engine is however different from your own local version which is why you have to do some extra work when building images.
+
+2) You might need to Install VirtualBox for virtualizing ... stuff.
+3) Clone this repo and its submodules using `git clone --recursive https://github.com/TeemuKoivisto/example-kubernetes-stack.git`.
+4) Start your local Kubernetes cluster: `minikube start`
+
+## Using kubectl and minikube
+
+It's advisable to read this https://kubernetes.io/docs/tutorials/hello-minikube/.
+
+* `kubectl get pods/svc/deployments/etc.` shows the requested resources.
+* `kubectl delete deployment,svc <name eg. my-react-bootstrap-deployment>` deletes specified resources.
+* `kubectl delete svc -l app=my-node-bootstrap` will delete resources using a label selector.
+* `kubectl get events` show recent events of the cluster.
+* `kubectl logs <pod name>` shows logs of the specified log.
+* `kubectl set image deployment/my-react-bootstrap-deployment my-react-bootstrap-image=teemukoivisto/my-react-bootstrap:0.4.0` update the image of a deployment.
+* `kubectl describe deployments` or `kubectl describe deployments my-react-bootstrap-deployment` to show detailed information of a resource(s).
+
+* `kubectl apply -f kubernetes-templates` will create and update services based on the templates defined inside specified folder.
+* `kubectl create secret generic my-pg-password --from-literal=password=asdfasdf` will create a secret variable available in your cluster. Run `kubectl get secrets` to see them listed.
+
 ## How to install with Docker Compose
 
 1) Clone this repo and its submodules using `git clone --recursive https://github.com/TeemuKoivisto/example-kubernetes-stack.git`.
@@ -34,8 +64,36 @@ Here's some useful commands with it:
 * `docker-compose down` stops and removes all the containers of the stack.
 * `docker-compose build` rebuilds the images specified as Dockerfiles in the `docker-compose.yml` (currently only my-reverse-proxy).
 
+You can deploy your images to Docker Hub using:
+```
+docker login
+docker build -t teemukoivisto/my-react-bootstrap:0.3.1 .
+docker push teemukoivisto/my-react-bootstrap:0.3.1
+```
+
 ## General
 
 The app will be running at https://localhost:9443 and http://localhost:9080 (which should redirect to 9443) reverse proxying the requests to the Node appserver and Nginx webserver. Also the API is open at http://localhost:9600 for testing purposes.
 
 There is however some issues with configuration so that http://localhost:9443 or https://localhost:9080 generate errors.
+
+## Helpful extensions for VSCode
+
+If you're using VSCode which I highly recommend you can install various of extensions to make developing much easier. Here's some of my favourites:
+
+* Docker
+* VS Live Share
+* nginx.conf hint
+* Code Spell Checker
+
+For the TypeScript projects:
+
+* vscode-styled-components
+* TSLint
+* Import Cost
+
+Also I'm fan of auto-save, put this to your User Settings to enable it:
+```
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 100,
+```
