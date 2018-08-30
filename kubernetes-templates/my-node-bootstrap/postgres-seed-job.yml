@@ -1,37 +1,30 @@
-apiVersion: apps/v1
-kind: Deployment
+# https://www.reddit.com/r/docker/comments/7fx9si/how_are_you_managing_db_migrations/
+# https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: my-node-bootstrap-deployment
+  generateName: seed-
   labels:
-    app: my-node-bootstrap
+    job: my-postgres-seed
     project: example-kubernetes-stack
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: my-node-bootstrap
   template:
     metadata:
       labels:
-        app: my-node-bootstrap
+        job: my-postgres-seed
     spec:
+      restartPolicy: Never
       containers:
-      - name: my-node-bootstrap
+      - name: my-postgres-seed
         image: teemukoivisto/my-node-bootstrap:0.3.2
-        # imagePullPolicy: Always
-        ports:
-        - containerPort: 8600
+        command: ["npm", "run", "db:seed"]
         env:
         - name: NODE_ENV
           value: "production"
-        - name: PORT
-          value: "8600" # All environment values must be strings...
         - name: LOG_LEVEL
           value: "info"
-        - name: JWT_SECRET
-          value: "verylongrandomstring"
         - name: DB_HOST
-          value: my-postgres-svc.default.svc.cluster.local # This DNS automatically resolves to k8s resource, here my-postgres-svc
+          value: my-postgres-svc.default.svc.cluster.local
         - name: DB_PORT
           value: "5432"
         - name: DB_USER

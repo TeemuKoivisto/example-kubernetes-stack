@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: my-react-bootstrap-svc
+  labels:
+    app: my-react-bootstrap
+    project: example-kubernetes-stack
+spec:
+  type: NodePort
+  selector:
+    app: my-react-bootstrap
+  ports:
+  - protocol: TCP
+    port: 80

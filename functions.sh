@@ -16,11 +16,11 @@ denv() {
   local ENV=$1
 
   if [ -z "$ENV" ]; then
-    echo "Missing first argument ENV. It should be either kube or local."
+    echo "Missing first argument ENV. It should be either k8s or local."
     exit 0
   fi
 
-  if [ "$ENV" = "kube" ]; then
+  if [ "$ENV" = "k8s" ]; then
     eval $(minikube docker-env)
   fi
 

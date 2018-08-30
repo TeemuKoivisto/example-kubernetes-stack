@@ -50,4 +50,4 @@ spec:
       volumes:
       - name: postgres-persistent-storage
         persistentVolumeClaim:
-          claimName: my-postgres-pvc
+          claimName: my-postgres-pvc # This has to reference the volume in `postgres-pv.yml`
