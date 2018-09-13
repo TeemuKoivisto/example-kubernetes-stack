@@ -1,23 +1,21 @@
-# https://www.reddit.com/r/docker/comments/7fx9si/how_are_you_managing_db_migrations/
-# https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: migration-
+  generateName: seed-
   labels:
-    job: my-postgres-migration
+    job: my-postgres-seed
     project: example-kubernetes-stack
 spec:
   template:
     metadata:
       labels:
-        job: my-postgres-migration
+        job: my-postgres-seed
     spec:
       restartPolicy: Never
       containers:
-      - name: my-postgres-migration
+      - name: my-postgres-seed
         image: teemukoivisto/my-node-bootstrap:0.3.2
-        command: ["./db/migrate.sh"]
+        command: ["npm", "run", "db:seed"]
         env:
         - name: NODE_ENV
           value: "production"

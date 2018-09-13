@@ -11,3 +11,15 @@ You can run `exec` inside containers/pods just like in Docker. Find a pod you'd 
 To see logs of a pod first find the nam of the pod with `kubectl get pods` and then `kubectl logs migration-f6xts-cc54p`.
 
 You can create resources with template file/folder as an argument: `kubectl create -f kubernetes-templates/my-postgres/` but it's more recommended to use `apply` since it does both creation/updating. Also you can delete resources with templates using eg. `kubectl delete -f kubernetes-templates/my-postgres/`.
+
+`kubectl create secret tls tls-secret --cert=localhost.crt --key=localhost.key`
+`kubectl create secret generic tls-dhparam --from-file=dhparam4096.pem`
+
+`kubectl create secret tls tls-certificate --key <key-file>.key --cert <certificate-file>.crt`
+`kubectl create secret generic tls-dhparam --from-file=<dhparam-file>.pem`
+
+Get easily the address of a service:
+`minikube service my-node-bootstrap-svc`
+
+You can watch resources with `-w` option:
+`kubectl get pods -w`

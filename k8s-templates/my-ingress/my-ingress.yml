@@ -1,0 +1,27 @@
+  apiVersion: extensions/v1beta1
+  kind: Ingress
+  metadata:
+    name: my-ingress
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    labels:
+      app: my-ingress
+      project: example-kubernetes-stack
+  spec:
+    rules:
+      - host: www.example.com # This doesn't actually resolve to DNS-name, it's just a string
+        http:
+          paths:
+          - path: /
+            backend:
+              serviceName: my-react-bootstrap-svc
+              servicePort: 80
+          - path: /api
+            backend:
+              serviceName: my-node-bootstrap-svc
+              servicePort: 8600
+    # This section is only required if TLS is to be enabled for the Ingress
+    # tls:
+    #   - hosts:
+    #     - www.example.com
+    #     secretName: localhost-tls-cert

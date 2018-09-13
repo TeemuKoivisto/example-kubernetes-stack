@@ -3,21 +3,21 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: seed-
+  generateName: migration-
   labels:
-    job: my-postgres-seed
+    job: my-postgres-migration
     project: example-kubernetes-stack
 spec:
   template:
     metadata:
       labels:
-        job: my-postgres-seed
+        job: my-postgres-migration
     spec:
       restartPolicy: Never
       containers:
-      - name: my-postgres-seed
+      - name: my-postgres-migration
         image: teemukoivisto/my-node-bootstrap:0.3.2
-        command: ["npm", "run", "db:seed"]
+        command: ["npm", "run", "db:migrate"]
         env:
         - name: NODE_ENV
           value: "production"
