@@ -12,7 +12,9 @@ You should have Docker, Kubernetes and kubectl installed locally. Also for devel
 
 ## How to install with minikube and kubectl
 
-1) First install `kubectl` and `minikube`. Here's a guide: https://kubernetes.io/docs/tutorials/hello-minikube/.
+1) Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/), [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) and Docker if you don't already have it. I recommend using package-manager like Chocolatey. Minikube should install with VirtualBox as default driver which I recommend. When starting minikube you might want to increase its memory limit since it's default 1GB might be too little for Helm charts (eg. Hadoop): `minikube --memory 4096 --cpus 2 start`. NOTE: this does not mean k8s will use 4 GBs of memory, just that it's able to.
+
+Here's a guide to these weird things: https://kubernetes.io/docs/tutorials/hello-minikube/.
 `kubectl` is a commandline tool for communicating with your Kubernetes Master Node:
 > `kubectl` is a command line interface for running commands against Kubernetes clusters.
 
@@ -21,9 +23,13 @@ Minikube is a tool that
 
 It comes with Docker Engine pre-installed. That Docker Engine is however different from your own local version which is why you have to do some extra work when building images.
 
-2) You might need to Install VirtualBox for virtualizing ... stuff.
+2) Install [helm](https://docs.helm.sh/using_helm/). Then run `helm init`.
 3) Clone this repo and its submodules using `git clone --recursive https://github.com/TeemuKoivisto/example-kubernetes-stack.git`.
 4) Start your local Kubernetes cluster: `minikube start`
+5) Load the helper functions with `. functions.sh`. You can use them as eg. `rm-images my-node` or `rm-containers teemu`.
+6) Build the images to minikube's Docker registry, install Nginx-controller Helm chart and create TLS-cert with: `k8s-build`
+7) Install the k8s stack from the templates and generate TLS-secrets: `k8s-install`
+8) And that's it! Run `k8s-url` to get the URL to the local ingress that's equivalent to the reverse-proxy in the Docker Compose stack.
 
 ## Using kubectl and minikube
 
