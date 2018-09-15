@@ -37,7 +37,8 @@ k8s-build() {
   helm install --name my-nginx-ingress stable/nginx-ingress \
     --set rbac.create=false --set rbac.createRole=false --set rbac.createClusterRole=false
 
-  ./my-reverse-proxy/generate-key.sh "local"
+  cd ./my-reverse-proxy
+  ./generate-key.sh "local"
 }
 
 k8s-install() {

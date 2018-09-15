@@ -36,10 +36,10 @@ It comes with Docker Engine pre-installed. That Docker Engine is however differe
 It's advisable to read this https://kubernetes.io/docs/tutorials/hello-minikube/.
 
 * `kubectl get pods/svc/deployments/etc.` shows the requested resources.
-* `kubectl delete deployment,svc <name eg. my-react-bootstrap-deployment>` deletes specified resources.
-* `kubectl delete svc -l app=my-node-bootstrap` will delete resources using a label selector.
+* `kubectl delete deployment <name eg. my-react-bootstrap-deployment>` deletes specified resources.
+* `kubectl delete deployment,svc -l app=my-node-bootstrap` will delete resources using a label selector.
 * `kubectl get events` show recent events of the cluster.
-* `kubectl logs <pod name>` shows logs of the specified log.
+* `kubectl logs <pod name>` shows logs of the specified pod.
 * `kubectl set image deployment/my-react-bootstrap-deployment my-react-bootstrap-image=teemukoivisto/my-react-bootstrap:0.4.0` update the image of a deployment.
 * `kubectl describe deployments` or `kubectl describe deployments my-react-bootstrap-deployment` to show detailed information of a resource(s).
 
