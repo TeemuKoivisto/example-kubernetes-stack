@@ -12,7 +12,7 @@ services:
     image: teemukoivisto/my-react-bootstrap:0.3.1
     restart: always
   my_node_bootstrap:
-    image: teemukoivisto/my-node-bootstrap:0.3.2
+    image: teemukoivisto/my-node-bootstrap:0.3.3
     ports:
       - 9600:8600 
     environment:
@@ -27,7 +27,7 @@ services:
       DB_NAME: my_postgres_db
     restart: always
   my_flyway_migration:
-    image: teemukoivisto/my-node-bootstrap:0.3.2
+    image: teemukoivisto/my-node-bootstrap:0.3.3
     command: ./db/migrate.sh
     depends_on:
       - my_postgres
