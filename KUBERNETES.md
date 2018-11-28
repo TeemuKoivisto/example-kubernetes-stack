@@ -23,3 +23,53 @@ Get easily the address of a service:
 
 You can watch resources with `-w` option:
 `kubectl get pods -w`
+
+## Mounting local volumes to k8s
+
+Very often when running k8s locally, you want to persist your files you download or move to the cluster. This way when you're stopping your minikube and restarting, again, they won't disappear into the cyber-hell.
+
+To do this what I do is first create a persitentVolume and persistentVolumeClaim as independent deployment. For example I might use this setup called eg. `my-spark-pvc.yml`:
+
+```
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-spark-pv
+  labels:
+    type: local
+    project: my-spark-cluster
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-spark-pvc
+  labels:
+    project: my-spark-cluster
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+```
+
+**BUT** there is one thing missing here. This works fine and dandy if all we're doing is relaunching the same Helm chart / cluster but once you restart your minikube, poof all gone!
+
+So we'll have to persist the volume to our own filesystem, here's a one guide that I found: https://stackoverflow.com/questions/48534980/mount-local-directory-into-pod-in-minikube
+
+I can't be bothered with passing mount-flags to minikube that I'll forget anyway after deleting & restarting it to change the RAM/CPU limits. Instead I'd create a folder to path `~/k8s-mount` and change the hostPath of the YAML according to this table https://kubernetes.io/docs/setup/minikube/#mounted-host-folders. So in macOS the hosted folder is `/Users/`:
+```
+  hostPath:
+    path: /Users/teemu/k8s-mount/spark-data
+```
+
+And that's it! Now you'll be able to persist the files even over cluster shutdowns. Makes life much easier when you don't have to download the same 1GB file over and over again. :)

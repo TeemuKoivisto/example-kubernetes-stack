@@ -8,8 +8,9 @@ rm-images() {
 
 rm-containers() {
   local GREP_STRING=$1
-  docker ps -a | grep "${GREP_STRING}" | awk '{print $1}' | xargs docker stop
-  docker ps -a | grep "${GREP_STRING}" | awk '{print $1}' | xargs docker rm
+  OLD_CONTAINER_ID="$(docker ps -a | grep ${GREP_STRING} | awk '{print $1}')"
+  docker stop "${OLD_CONTAINER_ID}" || true
+  docker rm "${OLD_CONTAINER_ID}" || true
 }
 
 denv() {
@@ -27,6 +28,14 @@ denv() {
   if [ "$ENV" = "local" ]; then
     eval $(minikube docker-env -u)
   fi
+}
+
+# Just a random function to remember how tunneling was done
+tunnel() {
+  local SSH_NAME=$1 # your login ssh-name, eg. teemu
+  local TARGET_IP=$2
+  local TUNNELED_ADDRESS=$3 # eg. 127.0.0.1:80
+  ssh -L 9000:$TUNNELED_ADDRESS $SSH_NAME@$TARGET_IP 
 }
 
 k8s-build() {
