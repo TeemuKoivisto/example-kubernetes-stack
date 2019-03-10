@@ -1,4 +1,4 @@
-FROM nginx:1.15.0
+FROM nginx:1.15.9-alpine
 
 LABEL maintainer="https://github.com/teemukoivisto"
 

@@ -9,10 +9,10 @@ services:
       - 9443:443
     restart: always
   my_react_bootstrap:
-    image: teemukoivisto/my-react-bootstrap:0.3.2
+    image: teemukoivisto/my-react-bootstrap:0.4.1
     restart: always
   my_node_bootstrap:
-    image: teemukoivisto/my-node-bootstrap:0.3.4
+    image: teemukoivisto/my-node-bootstrap:0.4.0
     ports:
       - 9600:8600 
     environment:
@@ -27,18 +27,19 @@ services:
       DB_NAME: my_postgres_db
     restart: always
   my_flyway_migration:
-    image: teemukoivisto/my-node-bootstrap:0.3.4
-    command: ./db/migrate.sh
-    depends_on:
-      - my_postgres
+    image: boxfuse/flyway:5.2.4-alpine
+    entrypoint: ["sh", "-c", "/flyway/wait-for-it.sh my_postgres:5432 -- flyway migrate"]
+    volumes:
+    - ./my-node-bootstrap/db/migrations:/flyway/sql
+    - ./my-node-bootstrap/db/seed/afterMigrate.sql:/flyway/sql/afterMigrate.sql # Should I do this automatically or use seed.sh..?
+    - ./my-node-bootstrap/db/scripts/wait-for-it.sh:/flyway/wait-for-it.sh
     environment:
-      DB_HOST: host.docker.internal
-      DB_PORT: 5600
-      DB_USER: pg-user
-      DB_PASSWORD: my-pg-password
-      DB_NAME: my_postgres_db
+      FLYWAY_PASSWORD: my-pg-password
+      FLYWAY_USER: pg-user
+      FLYWAY_URL: jdbc:postgresql://my_postgres:5432/my_postgres_db
+      FLYWAY_CONNECT_RETRIES: 180
   my_postgres:
-    image: postgres:10.5
+    image: postgres:11.2-alpine
     ports:
       - 5600:5432
     environment:

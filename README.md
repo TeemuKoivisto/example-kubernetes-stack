@@ -6,13 +6,26 @@ Utilizes my bootstrap projects as a basis:
 * https://github.com/TeemuKoivisto/my-node-bootstrap
 * https://github.com/TeemuKoivisto/my-react-bootstrap
 
+**Table of Contents**
+
+<!-- toc -->
+- [Example Kubernetes Stack](#example-kubernetes-stack)
+  - [Prerequisites](#prerequisites)
+  - [How to install with minikube and kubectl](#how-to-install-with-minikube-and-kubectl)
+  - [Using kubectl and minikube](#using-kubectl-and-minikube)
+  - [How to install with Docker Compose](#how-to-install-with-docker-compose)
+  - [Using Docker Compose](#using-docker-compose)
+  - [General](#general)
+  - [Helpful extensions for VSCode](#helpful-extensions-for-vscode)
+<!-- tocstop -->
+
 ## Prerequisites
 
 You should have Docker, Kubernetes and kubectl installed locally. Also for developing the backend and frontend apps you should install Node.js.
 
 ## How to install with minikube and kubectl
 
-1) Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/), [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) and Docker if you don't already have it. I recommend using package-manager like Chocolatey. Minikube should install with VirtualBox as default driver which I recommend. When starting minikube you might want to increase its memory limit since it's default 1GB might be too little for Helm charts (eg. Hadoop): `minikube --memory 4096 --cpus 2 start`. NOTE: this does not mean k8s will use 4 GBs of memory, just that it's able to.
+1) Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/), [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) and Docker if you don't already have it. I recommend using package-manager like Chocolatey. Minikube should install with VirtualBox as default driver which I recommend. When starting minikube you might want to increase its memory limit since it's default 1GB *is* too little for Helm charts (eg. Hadoop): `minikube --memory 4096 --cpus 2 start`. NOTE: this does not mean k8s will use 4 GBs of memory, just that it's able to.
 
 Here's a guide to these weird things: https://kubernetes.io/docs/tutorials/hello-minikube/.
 `kubectl` is a commandline tool for communicating with your Kubernetes Master Node:

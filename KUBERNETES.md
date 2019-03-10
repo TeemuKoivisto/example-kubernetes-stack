@@ -28,7 +28,7 @@ You can watch resources with `-w` option:
 
 Very often when running k8s locally, you want to persist your files you download or move to the cluster. This way when you're stopping your minikube and restarting, again, they won't disappear into the cyber-hell.
 
-To do this what I do is first create a persitentVolume and persistentVolumeClaim as independent deployment. For example I might use this setup called eg. `my-spark-pvc.yml`:
+To do this what I do is first create a persistentVolume and persistentVolumeClaim as independent deployment. For example I might use this setup called eg. `my-spark-pv.yml`:
 
 ```
 apiVersion: v1
@@ -66,7 +66,7 @@ spec:
 
 So we'll have to persist the volume to our own filesystem, here's a one guide that I found: https://stackoverflow.com/questions/48534980/mount-local-directory-into-pod-in-minikube
 
-I can't be bothered with passing mount-flags to minikube that I'll forget anyway after deleting & restarting it to change the RAM/CPU limits. Instead I'd create a folder to path `~/k8s-mount` and change the hostPath of the YAML according to this table https://kubernetes.io/docs/setup/minikube/#mounted-host-folders. So in macOS the hosted folder is `/Users/`:
+I can't be bothered with passing mount-flags to minikube that I'll forget anyway after deleting & restarting it to change the RAM/CPU limits. Instead I'll create a folder to path `~/k8s-mount` and change the hostPath of the YAML according to this table https://kubernetes.io/docs/setup/minikube/#mounted-host-folders. So in macOS the hosted folder is `/Users/`:
 ```
   hostPath:
     path: /Users/teemu/k8s-mount/spark-data
