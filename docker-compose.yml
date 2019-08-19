@@ -9,7 +9,7 @@ services:
       - 9443:443
     restart: always
   my_react_bootstrap:
-    image: teemukoivisto/my-react-bootstrap:0.4.1
+    image: teemukoivisto/my-react-bootstrap:0.5.1
     restart: always
   my_node_bootstrap:
     image: teemukoivisto/my-node-bootstrap:0.4.0

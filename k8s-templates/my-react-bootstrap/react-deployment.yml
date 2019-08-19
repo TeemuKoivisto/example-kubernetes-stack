@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: my-react-bootstrap-image
-        image: teemukoivisto/my-react-bootstrap:0.3.1
+        image: teemukoivisto/my-react-bootstrap:0.5.1
         ports:
         - containerPort: 80

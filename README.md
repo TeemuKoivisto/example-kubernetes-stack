@@ -15,6 +15,7 @@ Utilizes my bootstrap projects as a basis:
   - [Using kubectl and minikube](#using-kubectl-and-minikube)
   - [How to install with Docker Compose](#how-to-install-with-docker-compose)
   - [Using Docker Compose](#using-docker-compose)
+  - [TODO](#todo)
   - [General](#general)
   - [Helpful extensions for VSCode](#helpful-extensions-for-vscode)
 <!-- tocstop -->
@@ -89,6 +90,10 @@ docker login
 docker build -t teemukoivisto/my-react-bootstrap:0.3.1 .
 docker push teemukoivisto/my-react-bootstrap:0.3.1
 ```
+
+## TODO
+
+* Use DNS for the localhost:9443 docker-compose address
 
 ## General
 
