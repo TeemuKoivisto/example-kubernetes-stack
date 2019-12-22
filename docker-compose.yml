@@ -1,4 +1,5 @@
 version: '3'
+
 services:
   my_reverse_proxy:
     build:
@@ -9,10 +10,12 @@ services:
       - 9443:443
     restart: always
   my_react_bootstrap:
-    image: teemukoivisto/my-react-bootstrap:0.5.1
+    build:
+      context: ./my-react-bootstrap
     restart: always
   my_node_bootstrap:
-    image: teemukoivisto/my-node-bootstrap:0.4.0
+    build:
+      context: ./my-node-bootstrap
     ports:
       - 9600:8600 
     environment:
