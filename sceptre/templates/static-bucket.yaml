@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Bucket for static assets eg React SPA and CF logs
+
+Parameters:
+  Project:
+    Description: Name of the project
+    Type: String
+  Environment:
+    Description: Environment where the stack is launched
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    DeletionPolicy: Retain
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub access-identity-${Project}-${Environment}-static-bucket
+
+  StaticBucket:
+    DeletionPolicy: Retain
+    Type: AWS::S3::Bucket
+  
+  StaticBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref StaticBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement: 
+          -
+            Action: s3:GetObject
+            Effect: Allow
+            Resource: !Sub arn:aws:s3:::${StaticBucket}/*
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+
+Outputs:
+  CloudFrontOriginAccessIdentityId:
+    Description: Id of CloudFront OAI
+    Value: !Ref CloudFrontOriginAccessIdentity
+    Export:
+      Name: !Sub ${AWS::StackName}:CloudFrontOriginAccessIdentityId
+  StaticBucketArn:
+    Description: ARN of the static bucket
+    Value: !GetAtt StaticBucket.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}:StaticBucketArn
+  StaticBucketDomainName:
+    Description: Domain name of the static bucket
+    Value: !GetAtt StaticBucket.DomainName
+    Export:
+      Name: !Sub ${AWS::StackName}:StaticBucketDomainName

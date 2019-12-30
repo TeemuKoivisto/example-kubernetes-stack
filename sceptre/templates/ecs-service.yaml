@@ -1,0 +1,221 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ECS service for Example Nodejs app
+
+Parameters:
+  Project:
+    Description: Name of the project
+    Type: String
+  Environment:
+    Description: Environment where the stack is launched
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+  VpcId:
+    Description: VPC id
+    Type: String
+  PublicSubnet1Id:
+    Description: Id of 1st Public SN
+    Type: String
+  PublicSubnet2Id:
+    Description: Id of 2nd Public SN
+    Type: String
+  PublicSubnet3Id:
+    Description: Id of 3rd Public SN
+    Type: String
+  AppSecurityGroupId:
+    Description: Id of Example app's security group
+    Type: String
+  ECSClusterName:
+    Description: Name of the ECS cluster
+    Type: String
+  ScalingRoleArn:
+    Description: ARN for the ECS cluster's scaling role
+    Type: String
+  PublicTargetGroupArn:
+    Description: ARN for the ECS cluster's public facing target group
+    Type: String
+  ExampleNodejsRepositoryUri:
+    Description: Example NodeJS app's repository URI
+    Type: String
+  ServiceName:
+    Description: Name for the service to import values from its mappings
+    Type: String
+    AllowedValues:
+      - examplenodejs
+  ImageTag:
+    Description: Docker image tag for container
+    Type: String
+  ApplicationPort:
+    Description: Port where the Example app runs
+    Type: String
+
+Mappings:
+  examplenodejs:
+    CpuUnits:
+      dev: '256'
+    TaskMemory:
+      dev: '0.5GB'
+    ContainerMemory: # Hard limit (in MiB) for container. If exceeded, the container is terminated
+      dev: '500'
+    DesiredCount:
+      dev: '1'
+    MaxCapacity: 
+      dev: '2'
+    MinCapacity:
+      dev: '1'
+    TargetValue:
+      dev: '50'
+  AppLogs:
+    DeletionPolicy:
+      dev: Delete
+      prod: Retain
+    RetentionDays:
+      dev: 180
+      prod: 3653
+
+Resources:
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      DesiredCount: !FindInMap [ !Ref ServiceName, DesiredCount, !Ref Environment ]
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      Cluster: !Ref ECSClusterName
+      LaunchType: FARGATE
+      TaskDefinition: !Ref TaskDefinition
+      HealthCheckGracePeriodSeconds: 20
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED # Remove this if you want to use private subnets with NATs
+          SecurityGroups:
+            - !Ref AppSecurityGroupId
+          Subnets:
+            - !Ref PublicSubnet1Id # Should be private but oh well, no NATs this way
+            - !Ref PublicSubnet2Id
+            - !Ref PublicSubnet3Id
+      LoadBalancers:
+      - ContainerName: !Sub ${Environment}-${ServiceName}
+        ContainerPort: !Ref ApplicationPort
+        TargetGroupArn: !Ref PublicTargetGroupArn
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref ServiceName
+      RequiresCompatibilities:
+      - FARGATE
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskRole
+      Cpu: !FindInMap [ !Ref ServiceName, CpuUnits, !Ref Environment ]
+      Memory: !FindInMap [ !Ref ServiceName, TaskMemory, !Ref Environment ]
+      ContainerDefinitions:
+      - Name: !Sub ${Environment}-${ServiceName}
+        Image: !Sub ${ExampleNodejsRepositoryUri}:${ImageTag}
+        PortMappings:
+        - ContainerPort: !Ref ApplicationPort
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: !Sub ${Project}-${Environment}-${ServiceName}
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Sub ${Project}-${Environment}-${ServiceName}
+        Environment:
+          -
+            Name: JWT_SECRET_SSM_PATH
+            Value: !Sub /${Project}/${Environment}/${ServiceName}/jwt-secret
+          -
+            Name: DB_USER_SSM_PATH
+            Value: !Sub /${Project}/${Environment}/${ServiceName}/db-user
+          -
+            Name: DB_PASSWORD_SSM_PATH
+            Value: !Sub /${Project}/${Environment}/${ServiceName}/db-password
+          -
+            Name: AWS_ENVIRONMENT
+            Value: !Ref Environment
+
+  ApplicationLogGroup:
+    # TODO waiting for https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/162
+    # DeletionPolicy: !FindInMap [ AppLogs, DeletionPolicy, !Ref Environment ]
+    DeletionPolicy: Delete
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub ${Project}-${Environment}-${ServiceName}
+      RetentionInDays: !FindInMap [ AppLogs, RetentionDays, !Ref Environment ]
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${Project}-${Environment}-${ServiceName}-TaskRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: TaskRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Action: ssm:GetParameter*
+                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${Project}/${Environment}/*
+              -
+                Effect: Allow
+                Action: kms:Decrypt
+                Resource: '*'
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${Project}-${Environment}-${ServiceName}-TaskExecutionRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: ecs-tasks.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  ServiceAutoScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: !FindInMap [ !Ref ServiceName, MaxCapacity, !Ref Environment ]
+      MinCapacity: !FindInMap [ !Ref ServiceName, MinCapacity, !Ref Environment ]
+      ResourceId:
+        Fn::Sub:
+          - service/${ClusterName}/${ServiceName}
+          - ClusterName: !Ref ECSClusterName
+            ServiceName: !GetAtt Service.Name
+      RoleARN: !Ref ScalingRoleArn
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+
+  ServiceCPUAutoScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Sub ${Project}-${Environment}-${ServiceName}-CPUAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ServiceAutoScalingTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: !FindInMap [ !Ref ServiceName, TargetValue, !Ref Environment ]
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification: 
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+
+Outputs:
+  ECSServiceName:
+    Description: Official name of the ECS service
+    Value: !GetAtt Service.Name
+    Export:
+      Name: !Sub ${AWS::StackName}:ServiceName

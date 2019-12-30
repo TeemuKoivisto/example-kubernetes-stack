@@ -1,0 +1,13 @@
+template_path: ecs-cluster.yaml
+parameters:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}
+  VpcId: !stack_output dev/eu-west-1/vpc.yaml::VpcId
+  PublicSubnet1Id: !stack_output dev/eu-west-1/vpc.yaml::PublicSubnet1Id
+  PublicSubnet2Id: !stack_output dev/eu-west-1/vpc.yaml::PublicSubnet2Id
+  PublicSubnet3Id: !stack_output dev/eu-west-1/vpc.yaml::PublicSubnet3Id
+  ALBSecurityGroupId: !stack_output dev/eu-west-1/security-groups.yaml::ALBSecurityGroupId
+  ApplicationPort: '8600'
+stack_tags:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}

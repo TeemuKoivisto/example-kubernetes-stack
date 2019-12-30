@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Edge lambda for rewriting URLs for the React frontend
+
+Parameters:
+  Project:
+    Description: Name of the project
+    Type: String
+  Environment:
+    Description: Environment where the stack is launched
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  URLRewriterLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${Project}-${Environment}-egde-lambda
+      Handler: index.handler
+      Role: !GetAtt URLRewriterLambdaRole.Arn
+      Code:
+        ZipFile: |
+          const path = require('path');
+          exports.handler = (event, context, callback) => {
+            const { request } = event.Records[0].cf;
+            if (!path.extname(request.uri)) {
+              request.uri = '/index.html';
+            }
+            callback(null, request);
+          };
+      Runtime: 'nodejs8.10'
+      Timeout: 24
+      TracingConfig:
+        Mode: 'Active'
+
+  URLRewriterLambdaVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref URLRewriterLambda
+
+  URLRewriterLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Action: sts:AssumeRole
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+                  - edgelambda.amazonaws.com
+                  - replicator.lambda.amazonaws.com
+              Effect: Allow
+        Policies:
+          - PolicyName: EdgeLambdaPolicy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Action:
+                    - xray:PutTraceSegments
+                    - xray:PutTelemetryRecords
+                    - lambda:GetFunction
+                    - lambda:EnableReplication*
+                    - lambda:InvokeFunction
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Effect: Allow
+                  Resource: '*'
+Outputs:
+  URLRewriterLambdaArn:
+    Description: ARN of the URL Rewriter edge lambda
+    Value: !GetAtt URLRewriterLambda.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-URLRewriter-Lambda-Arn
+  URLRewriterLambdaVersion:
+    Description: Version of the URL Rewriter edge lambda
+    Value: !GetAtt URLRewriterLambdaVersion.Version
+    Export:
+      Name: !Sub ${AWS::StackName}-URLRewriter-Lambda-Version

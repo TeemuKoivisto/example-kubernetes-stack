@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CF distribution with S3 and ALB as origins and URL rewriter edge-lambda
+
+Parameters:
+  Project:
+    Description: Name of the project
+    Type: String
+  Environment:
+    Description: Environment where the stack is launched
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+  StaticBucketDomainName:
+    Description: Bucket domain name eg example-app-production-staticbucket-11blwnizvax5k.s3.amazonaws.com
+    Type: String
+  ECSClusterALBDNS:
+    Description: Domain name for the load-balancer of the ECS cluster eg example-app-production-alb-1633779076.eu-west-1.elb.amazonaws.com
+    Type: String
+  CloudFrontOriginAccessIdentityId:
+    Description: CloudFront access identity id for restricting bucket access to only this CF distribution
+    Type: String
+  EdgeLambdaArn:
+    Description: Arn of the URL rewriter edge lambda for the React SPA
+    Type: String
+  EdgeLambdaVersion:
+    Description: Version of the URL rewriter edge lambda
+    Type: Number
+
+Resources:
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub ${Project}-${Environment}-distribution
+        PriceClass: PriceClass_100
+        Logging:
+          Bucket: !Ref StaticBucketDomainName
+          IncludeCookies: false
+          Prefix: !Sub logs/cloudfront/${Environment}/${Project}
+        Origins:
+          -
+            Id: StaticStaticAssets
+            DomainName: !Ref StaticBucketDomainName
+            OriginPath: '/frontend'
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentityId}
+          -
+            Id: !Sub ELB-${Project}-${Environment}
+            DomainName: !Ref ECSClusterALBDNS
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only # Change to https-only if using HTTPS certificate with ALB 
+        DefaultCacheBehavior:
+          TargetOriginId: StaticStaticAssets
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          Compress: true
+          ViewerProtocolPolicy: redirect-to-https
+          DefaultTTL: 120
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: !Sub ${EdgeLambdaArn}:${EdgeLambdaVersion}
+        CacheBehaviors:
+          -
+            PathPattern: /api/**
+            TargetOriginId: !Sub ELB-${Project}-${Environment}
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            Compress: true
+            DefaultTTL: 120
+            ViewerProtocolPolicy: redirect-to-https
+            ForwardedValues:
+              Headers:
+                - Authorization
+                - Accept
+                - Host
+              QueryString: true
+              Cookies:
+               Forward: none

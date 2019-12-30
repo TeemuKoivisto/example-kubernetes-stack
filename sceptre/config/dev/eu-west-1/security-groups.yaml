@@ -1,0 +1,9 @@
+template_path: security-groups.yaml
+parameters:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}
+  VpcId: !stack_output dev/eu-west-1/vpc.yaml::VpcId
+  ApplicationPort: '8600'
+stack_tags:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}

@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ECR repositories for the Example Nodejs app
+Parameters:
+  Project:
+    Description: Name of the project
+    Type: String
+  Environment:
+    Description: Environment where the stack is launched
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+  ExampleNodejsAppName:
+    Description: The name of the Nodejs app in the ECR repository
+    Type: String
+  AllowedProdPullAccessAWSAccountId:
+    Description: AWS account id allowed to pull the ECR image, use the id of the account where the production stack is run
+    Type: String
+
+Resources:
+  ExampleNodejsRepository:
+    DeletionPolicy: Retain
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${Project}-${Environment}/${ExampleNodejsAppName}
+      RepositoryPolicyText:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              AWS:
+              # Will determine the start of the ECR URL eg 014750007983.dkr.ecr.eu-west-1.amazonaws.com/example-app-production/example-nodejs
+              - !Ref AllowedProdPullAccessAWSAccountId
+            Action:
+            - ecr:GetAuthorizationToken 
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+            - ecr:ListImages
+            - ecr:PutImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
+
+Outputs:
+  ExampleNodejsRepositoryUri:
+    Description: Example NodeJS app's repository URI
+    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ExampleNodejsRepository}

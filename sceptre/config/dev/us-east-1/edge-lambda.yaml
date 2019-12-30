@@ -1,0 +1,7 @@
+template_path: edge-lambda.yaml
+parameters:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}
+stack_tags:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}

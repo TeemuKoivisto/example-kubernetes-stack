@@ -1,0 +1,19 @@
+template_path: ecs-service.yaml
+parameters:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}
+  VpcId: !stack_output dev/eu-west-1/vpc.yaml::VpcId
+  PublicSubnet1Id: !stack_output dev/eu-west-1/vpc.yaml::PublicSubnet1Id
+  PublicSubnet2Id: !stack_output dev/eu-west-1/vpc.yaml::PublicSubnet2Id
+  PublicSubnet3Id: !stack_output dev/eu-west-1/vpc.yaml::PublicSubnet3Id
+  AppSecurityGroupId: !stack_output dev/eu-west-1/security-groups.yaml::AppSecurityGroupId
+  ECSClusterName: !stack_output dev/eu-west-1/ecs-cluster.yaml::ClusterName
+  ScalingRoleArn: !stack_output dev/eu-west-1/ecs-cluster.yaml::ScalingRoleArn
+  PublicTargetGroupArn: !stack_output dev/eu-west-1/ecs-cluster.yaml::PublicTargetGroupArn
+  ExampleNodejsRepositoryUri: !stack_output dev/eu-west-1/ecr.yaml::ExampleNodejsRepositoryUri
+  ServiceName: 'examplenodejs' # No dash (-) since mapping in ecs-service.yaml won't work otherwise
+  ImageTag: 'latest' # Initial version, updated manually (with cloudformation update) by each new deployment
+  ApplicationPort: '8600'
+stack_tags:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}

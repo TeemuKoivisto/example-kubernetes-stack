@@ -1,0 +1,14 @@
+template_path: cloudfront.yaml
+parameters:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}
+  StaticBucketDomainName: !stack_output dev/eu-west-1/static-bucket.yaml::StaticBucketDomainName
+  ECSClusterALBDNS: !stack_output dev/eu-west-1/ecs-cluster.yaml::PublicALBDNSName
+  CloudFrontOriginAccessIdentityId: !stack_output dev/eu-west-1/static-bucket.yaml::CloudFrontOriginAccessIdentityId
+  EdgeLambdaArn: !stack_output dev/us-east-1/edge-lambda.yaml::URLRewriterLambdaArn
+  # NOTE: You have to manually publish the new edge lambda version from the console
+  #       after deploying changes to the edge lambda
+  EdgeLambdaVersion: '1' 
+stack_tags:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}

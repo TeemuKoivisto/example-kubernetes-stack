@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: SGs for the app running in ECS and the ALB serving them
+
+Parameters:
+  Project:
+    Description: Name of the project
+    Type: String
+  Environment:
+    Description: Environment where the stack is launched
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+  VpcId:
+    Description: VPC id of the stack
+    Type: String
+  ApplicationPort:
+    Description: Port where the Example app runs
+    Type: String
+
+Resources:
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupName: !Sub ${Project}-${Environment}-app-sg
+      GroupDescription: SG for the Example Nodejs app
+      SecurityGroupIngress:
+        Description: Allow communication with ALB
+        IpProtocol: tcp
+        SourceSecurityGroupId: !Ref ALBSecurityGroup
+        FromPort: !Ref ApplicationPort
+        ToPort: !Ref ApplicationPort
+      Tags:
+      - Key: Name
+        Value: !Sub app-sg-${Project}-${Environment}
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupName: !Sub ${Project}-${Environment}-db-sg
+      GroupDescription: SG for the Example PostgreSQL database
+      SecurityGroupIngress:
+        Description: Allow communication with App
+        IpProtocol: tcp
+        SourceSecurityGroupId: !Ref AppSecurityGroup
+        FromPort: 5432
+        ToPort: 5432
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupName: !Sub ${Project}-${Environment}-alb-sg
+      GroupDescription: SG for the ALB running in front of ECS
+      SecurityGroupIngress:
+        Description: Allow ALL connections to HTTP port 
+        IpProtocol: tcp
+        CidrIp: 0.0.0.0/0
+        FromPort: 80
+        ToPort: 80
+      Tags:
+      - Key: Name
+        Value: !Sub alb-sg-${Project}-${Environment}
+
+Outputs:
+  AppSecurityGroupId:
+    Description: Id of Example app's security group
+    Value: !Ref AppSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}:AppSecurityGroupId
+  ALBSecurityGroupId:
+    Description: Id of ALB's security group
+    Value: !Ref ALBSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}:ALBSecurityGroupId

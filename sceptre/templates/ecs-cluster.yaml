@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ECS cluster, ALB, TG and SG
+
+Parameters:
+  Project:
+    Description: Name of the project
+    Type: String
+  Environment:
+    Description: Environment where the stack is launched
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+  VpcId:
+    Description: VPC id
+    Type: String
+  PublicSubnet1Id:
+    Description: Id of 1st Public SN
+    Type: String
+  PublicSubnet2Id:
+    Description: Id of 2nd Public SN
+    Type: String
+  PublicSubnet3Id:
+    Description: Id of 3rd Public SN
+    Type: String
+  ALBSecurityGroupId:
+    Description: Id of ALB's security group
+    Type: String
+  ApplicationPort:
+    Description: Port where the Example app runs
+    Type: String
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+
+  PublicALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub ${Project}-${Environment}-alb
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref ALBSecurityGroupId
+      Subnets:
+        - !Ref PublicSubnet1Id
+        - !Ref PublicSubnet2Id
+        - !Ref PublicSubnet3Id
+
+  PublicTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${Project}-${Environment}-tg
+      Port: !Ref ApplicationPort
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 20
+      UnhealthyThresholdCount: 3
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      HealthCheckPath: /health
+      TargetType: ip
+      VpcId: !Ref VpcId
+
+  ALBListenerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref PublicTargetGroup
+      LoadBalancerArn: !Ref PublicALB
+      Port: 80
+      Protocol: HTTP
+
+  ScalingRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: !Sub ECSScalingRole-${Project}-${Environment}
+      AssumeRolePolicyDocument: 
+        Version: 2012-10-17
+        Statement: 
+        - Effect: Allow
+          Principal: 
+            Service: application-autoscaling.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole
+
+Outputs:
+  ClusterName:
+    Description: Name of the ECS cluster
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub ${AWS::StackName}:ECSClusterName
+  ScalingRoleArn:
+    Description: ARN of the scaling role
+    Value: !GetAtt ScalingRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}:ScalingRoleArn
+  PublicTargetGroupArn:
+    Description: ARN of the target group
+    Value: !Ref PublicTargetGroup
+    Export:
+      Name: !Sub ${AWS::StackName}:PublicTargetGroupArn
+  PublicALBDNSName:
+    Description: DNS name of the public ALB, used by the CloudFront distribution
+    Value: !GetAtt PublicALB.DNSName
+    Export:
+      Name: !Sub ${AWS::StackName}:PublicALBDNSName
+  PublicTargetGroupFullName:
+    Description: Full name of the target group
+    Value: !GetAtt PublicTargetGroup.TargetGroupFullName
+    Export:
+      Name: !Sub ${AWS::StackName}:PublicTargetGroupFullName
