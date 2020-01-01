@@ -14,22 +14,22 @@ Parameters:
   CIDR:
     Description: CIDR of VPC
     Type: String
-  PublicSubnet1CIDR:
+  1PublicSubnetCIDR:
     Description: CIDR of 1st Public SN
     Type: String
-  PublicSubnet2CIDR:
+  2PublicSubnetCIDR:
     Description: CIDR of 2nd Public SN
     Type: String
-  PublicSubnet3CIDR:
+  3PublicSubnetCIDR:
     Description: CIDR of 3rd Public SN
     Type: String
-  PrivateSubnet1CIDR:
+  1PrivateSubnetCIDR:
     Type: String
     Description: CIDR of 1st Private SN
-  PrivateSubnet2CIDR:
+  2PrivateSubnetCIDR:
     Type: String
     Description: CIDR of 2nd Private SN
-  PrivateSubnet3CIDR:
+  3PrivateSubnetCIDR:
     Type: String
     Description: CIDR of 3rd Private SN
 
@@ -45,101 +45,93 @@ Resources:
       - Key: Name
         Value: !Sub ${Project}-${Environment}-vpc
 
-  PublicSubnet1:
+  1PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Ref PublicSubnet1CIDR
+      CidrBlock: !Ref 1PublicSubnetCIDR
       AvailabilityZone: !Select [ 0, !GetAZs '' ]
       VpcId: !Ref Vpc
       Tags:
       - Key: Name
         Value: !Sub 1st-public-SN-${Project}-${Environment}
-
-  PublicSubnet2:
+  2PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Ref PublicSubnet2CIDR
+      CidrBlock: !Ref 2PublicSubnetCIDR
       AvailabilityZone: !Select [ 1, !GetAZs '' ]
       VpcId: !Ref Vpc
       Tags:
       - Key: Name
         Value: !Sub 2nd-public-SN-${Project}-${Environment}
-
-  PublicSubnet3:
+  3PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Ref PublicSubnet3CIDR
+      CidrBlock: !Ref 3PublicSubnetCIDR
       AvailabilityZone: !Select [ 2, !GetAZs '' ]
       VpcId: !Ref Vpc
       Tags:
       - Key: Name
         Value: !Sub 3rd-public-SN-${Project}-${Environment}
 
-  PrivateSubnet1:
+  1PrivateSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Ref PrivateSubnet1CIDR
+      CidrBlock: !Ref 1PrivateSubnetCIDR
       AvailabilityZone: !Select [ 0, !GetAZs '' ]
       VpcId: !Ref Vpc
       Tags:
       - Key: Name
         Value: !Sub 1st-private-SN-${Project}-${Environment}
-
-  PrivateSubnet2:
+  2PrivateSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Ref PrivateSubnet2CIDR
+      CidrBlock: !Ref 2PrivateSubnetCIDR
       AvailabilityZone: !Select [ 1, !GetAZs '' ]
       VpcId: !Ref Vpc
       Tags:
       - Key: Name
         Value: !Sub 2nd-private-SN-${Project}-${Environment}
-
-  PrivateSubnet3:
+  3PrivateSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: !Ref PrivateSubnet3CIDR
+      CidrBlock: !Ref 3PrivateSubnetCIDR
       AvailabilityZone: !Select [ 2, !GetAZs '' ]
       VpcId: !Ref Vpc
       Tags:
       - Key: Name
         Value: !Sub 3rd-private-SN-${Project}-${Environment}
 
-  PublicSubnet1RouteTableAssociation:
+  1PublicSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref PublicSubnet1
-
-  PublicSubnet2RouteTableAssociation:
+      SubnetId: !Ref 1PublicSubnet
+  2PublicSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref PublicSubnet2
-
-  PublicSubnet3RouteTableAssociation:
+      SubnetId: !Ref 2PublicSubnet
+  3PublicSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref PublicSubnet3
+      SubnetId: !Ref 3PublicSubnet
 
-  PrivateSubnet1RouteTableAssociation:
+  1PrivateSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref PrivateRouteTable1
-      SubnetId: !Ref PrivateSubnet1
-
-  PrivateSubnet2RouteTableAssociation:
+      RouteTableId: !Ref 1PrivateRouteTable
+      SubnetId: !Ref 1PrivateSubnet
+  2PrivateSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref PrivateRouteTable2
-      SubnetId: !Ref PrivateSubnet2
-
-  PrivateSubnet3RouteTableAssociation:
+      RouteTableId: !Ref 2PrivateRouteTable
+      SubnetId: !Ref 2PrivateSubnet
+  3PrivateSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref PrivateRouteTable3
-      SubnetId: !Ref PrivateSubnet3
+      RouteTableId: !Ref 3PrivateRouteTable
+      SubnetId: !Ref 3PrivateSubnet
 
   IGW:
     Type: AWS::EC2::InternetGateway
@@ -147,42 +139,82 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub ${Project}-${Environment}-vpc
-
   IGWAssociation:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref Vpc
       InternetGatewayId: !Ref IGW
 
+  # Only one NAT for the 1st private SN, since we are using a single instance RDS
+  # to keep the costs low. Should use two/three incase one Availability Zone goes down
+  1NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  1NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt 1NatGatewayEIP.AllocationId
+      SubnetId: !Ref 1PublicSubnet
+  
+  # Route Tables
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
       Tags:
       - Key: Name
-        Value: !Sub ${Project}-${Environment}-rt
-
-  PrivateRouteTable1:
+        Value: !Sub public-rt-${Project}-${Environment}
+  1PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
-
-  PrivateRouteTable2:
+      Tags:
+      - Key: Name
+        Value: !Sub 1st-private-rt-${Project}-${Environment}
+  2PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
-
-  PrivateRouteTable3:
+      Tags:
+      - Key: Name
+        Value: !Sub 2nd-private-rt-${Project}-${Environment}
+  3PrivateRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref Vpc
+      Tags:
+      - Key: Name
+        Value: !Sub 3nd-private-rt-${Project}-${Environment}
 
+  # Routes
   PublicRoute:
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
       RouteTableId: !Ref PublicRouteTable
       GatewayId: !Ref IGW
+  1PrivateNatRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref 1PrivateRouteTable
+      NatGatewayId: !Ref 1NatGateway
+  2PrivateNatRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref 2PrivateRouteTable
+      NatGatewayId: !Ref 1NatGateway
+  3PrivateNatRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref 3PrivateRouteTable
+      NatGatewayId: !Ref 1NatGateway
+
+# Perhaps private Hosted Zone for development purposes?
+# eg IP-limited access to dev.app.com ?
 
 Outputs:
   VpcId:
@@ -195,33 +227,33 @@ Outputs:
     Value: !GetAtt Vpc.CidrBlock
     Export:
       Name: !Sub ${AWS::StackName}:Cidr
-  PublicSubnet1Id:
+  1PublicSubnetId:
     Description: Id of 1st Public SN
-    Value: !Ref PublicSubnet1
+    Value: !Ref 1PublicSubnet
     Export:
-      Name: !Sub ${AWS::StackName}:PublicSubnet1Id
-  PublicSubnet2Id:
+      Name: !Sub ${AWS::StackName}:1PublicSubnetId
+  2PublicSubnetId:
     Description: Id of 2nd Public SN
-    Value: !Ref PublicSubnet2
+    Value: !Ref 2PublicSubnet
     Export:
-      Name: !Sub ${AWS::StackName}:PublicSubnet2Id
-  PublicSubnet3Id:
+      Name: !Sub ${AWS::StackName}:2PublicSubnetId
+  3PublicSubnetId:
     Description: Id of 3rd Public SN
-    Value: !Ref PublicSubnet3
+    Value: !Ref 3PublicSubnet
     Export:
-      Name: !Sub ${AWS::StackName}:PublicSubnet3Id
-  PrivateSubnet1Id:
+      Name: !Sub ${AWS::StackName}:3PublicSubnetId
+  1PrivateSubnetId:
     Description: Id of 1st Private SN
-    Value: !Ref PrivateSubnet1
+    Value: !Ref 1PrivateSubnet
     Export:
-      Name: !Sub ${AWS::StackName}:PrivateSubnet1Id
-  PrivateSubnet2Id:
+      Name: !Sub ${AWS::StackName}:1PrivateSubnetId
+  2PrivateSubnetId:
     Description: Id of 2nd Private SN
-    Value: !Ref PrivateSubnet2
+    Value: !Ref 2PrivateSubnet
     Export:
-      Name: !Sub ${AWS::StackName}:PrivateSubnet2Id
-  PrivateSubnet3Id:
+      Name: !Sub ${AWS::StackName}:2PrivateSubnetId
+  3PrivateSubnetId:
     Description: Id of 3rd Private SN
-    Value: !Ref PrivateSubnet3
+    Value: !Ref 3PrivateSubnet
     Export:
-      Name: !Sub ${AWS::StackName}:PrivateSubnet3Id
+      Name: !Sub ${AWS::StackName}:3PrivateSubnetId

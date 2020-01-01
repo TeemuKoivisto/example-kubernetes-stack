@@ -14,13 +14,13 @@ Parameters:
   VpcId:
     Description: VPC id
     Type: String
-  PublicSubnet1Id:
+  1PublicSubnetId:
     Description: Id of 1st Public SN
     Type: String
-  PublicSubnet2Id:
+  2PublicSubnetId:
     Description: Id of 2nd Public SN
     Type: String
-  PublicSubnet3Id:
+  3PublicSubnetId:
     Description: Id of 3rd Public SN
     Type: String
   ALBSecurityGroupId:
@@ -42,9 +42,9 @@ Resources:
       SecurityGroups:
         - !Ref ALBSecurityGroupId
       Subnets:
-        - !Ref PublicSubnet1Id
-        - !Ref PublicSubnet2Id
-        - !Ref PublicSubnet3Id
+        - !Ref 1PublicSubnetId
+        - !Ref 2PublicSubnetId
+        - !Ref 3PublicSubnetId
 
   PublicTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup

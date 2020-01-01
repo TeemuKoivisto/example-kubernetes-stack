@@ -14,13 +14,13 @@ Parameters:
   VpcId:
     Description: VPC id
     Type: String
-  PublicSubnet1Id:
+  1PublicSubnetId:
     Description: Id of 1st Public SN
     Type: String
-  PublicSubnet2Id:
+  2PublicSubnetId:
     Description: Id of 2nd Public SN
     Type: String
-  PublicSubnet3Id:
+  3PublicSubnetId:
     Description: Id of 3rd Public SN
     Type: String
   AppSecurityGroupId:
@@ -48,6 +48,12 @@ Parameters:
     Type: String
   ApplicationPort:
     Description: Port where the Example app runs
+    Type: String
+  DBName:
+    Description: Database name eg devpostgres
+    Type: String
+  DBURL:
+    Description: DNS URL to the database eg example-app-dev-db.calmiqc5alov.eu-west-1.rds.amazonaws.com
     Type: String
 
 Mappings:
@@ -92,9 +98,9 @@ Resources:
           SecurityGroups:
             - !Ref AppSecurityGroupId
           Subnets:
-            - !Ref PublicSubnet1Id # Should be private but oh well, no NATs this way
-            - !Ref PublicSubnet2Id
-            - !Ref PublicSubnet3Id
+            - !Ref 1PublicSubnetId # Should be private but oh well, no NATs this way
+            - !Ref 2PublicSubnetId
+            - !Ref 3PublicSubnetId
       LoadBalancers:
       - ContainerName: !Sub ${Environment}-${ServiceName}
         ContainerPort: !Ref ApplicationPort
@@ -132,6 +138,15 @@ Resources:
           -
             Name: DB_PASSWORD_SSM_PATH
             Value: !Sub /${Project}/${Environment}/${ServiceName}/db-password
+          -
+            Name: DB_NAME
+            Value: !Ref DBName
+          -
+            Name: DB_HOST
+            Value: !Ref DBURL
+          -
+            Name: DB_PORT
+            Value: 5432
           -
             Name: AWS_ENVIRONMENT
             Value: !Ref Environment

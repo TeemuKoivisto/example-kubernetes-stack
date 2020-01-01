@@ -3,9 +3,9 @@ parameters:
   Environment: {{ command_path.0 }}
   Project: {{ project_code }}
   VpcId: !stack_output dev/eu-west-1/vpc.yaml::VpcId
-  PublicSubnet1Id: !stack_output dev/eu-west-1/vpc.yaml::PublicSubnet1Id
-  PublicSubnet2Id: !stack_output dev/eu-west-1/vpc.yaml::PublicSubnet2Id
-  PublicSubnet3Id: !stack_output dev/eu-west-1/vpc.yaml::PublicSubnet3Id
+  1PublicSubnetId: !stack_output dev/eu-west-1/vpc.yaml::1PublicSubnetId
+  2PublicSubnetId: !stack_output dev/eu-west-1/vpc.yaml::2PublicSubnetId
+  3PublicSubnetId: !stack_output dev/eu-west-1/vpc.yaml::3PublicSubnetId
   AppSecurityGroupId: !stack_output dev/eu-west-1/security-groups.yaml::AppSecurityGroupId
   ECSClusterName: !stack_output dev/eu-west-1/ecs-cluster.yaml::ClusterName
   ScalingRoleArn: !stack_output dev/eu-west-1/ecs-cluster.yaml::ScalingRoleArn
@@ -14,6 +14,8 @@ parameters:
   ServiceName: 'examplenodejs' # No dash (-) since mapping in ecs-service.yaml won't work otherwise
   ImageTag: 'latest' # Initial version, updated manually (with cloudformation update) by each new deployment
   ApplicationPort: '8600'
+  DBName: !stack_output dev/eu-west-1/db.yaml::DBName
+  DBURL: !stack_output dev/eu-west-1/db.yaml::DBURL
 stack_tags:
   Environment: {{ command_path.0 }}
   Project: {{ project_code }}

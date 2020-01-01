@@ -1,0 +1,15 @@
+template_path: db.yaml
+parameters:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}
+  VpcId: !stack_output dev/eu-west-1/vpc.yaml::VpcId
+  1PrivateSubnetId: !stack_output dev/eu-west-1/vpc.yaml::1PrivateSubnetId
+  2PrivateSubnetId: !stack_output dev/eu-west-1/vpc.yaml::2PrivateSubnetId
+  3PrivateSubnetId: !stack_output dev/eu-west-1/vpc.yaml::3PrivateSubnetId
+  DBSecurityGroupId: !stack_output dev/eu-west-1/security-groups.yaml::DBSecurityGroupId
+  DBUser: postgres
+  DBPassword: asdfasdf123
+  DBInstanceClass: db.t2.micro
+stack_tags:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}

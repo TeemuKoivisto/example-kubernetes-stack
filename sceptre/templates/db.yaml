@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Example app Postgres database
+
+Parameters:
+  Project:
+    Description: Name of the project
+    Type: String
+  Environment:
+    Description: Environment where the stack is launched
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+  VpcId:
+    Description: VPC id
+    Type: String
+  1PrivateSubnetId:
+    Description: Id of 1st Private SN
+    Type: String
+  2PrivateSubnetId:
+    Description: Id of 2nd Private SN
+    Type: String
+  3PrivateSubnetId:
+    Description: Id of 3rd Private SN
+    Type: String
+  DBSecurityGroupId:
+    Description: Database security group id with 5432 port open
+    Type: String
+  DBUser:
+    NoEcho: true
+    Type: String
+    Description: Postgres root user
+    MinLength: 5
+  DBPassword:
+    NoEcho: true
+    Type: String
+    Description: Postgres root password
+    MinLength: 8
+  DBInstanceClass:
+    Type: String
+    Description: DB instance class
+    ConstraintDescription: DB instance class not supported
+    AllowedValues:
+      - db.t2.micro
+      - db.t2.large
+
+Mappings:
+  MultiAz:
+    eu-west-1:
+      dev: false
+      prod: true
+
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub ${Project}-${Environment}-DBSubnetGroup
+      SubnetIds:
+        - !Ref 1PrivateSubnetId
+        - !Ref 2PrivateSubnetId
+        - !Ref 3PrivateSubnetId
+
+  DB:
+    DeletionPolicy: Snapshot # default
+    UpdateReplacePolicy: Snapshot
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20
+      StorageType: standard
+      DBInstanceClass: !Ref DBInstanceClass
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBInstanceIdentifier: !Sub ${Project}-${Environment}-db
+      DBName: !Sub ${Environment}postgres
+      Engine: postgres
+      EngineVersion: 11.5
+      MultiAZ: !FindInMap [MultiAz, !Ref "AWS::Region", !Ref Environment]
+      Port: 5432
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroupId
+      Tags:
+      - Key: Name
+        Value: !Sub ${Project}-${Environment}-db
+
+Outputs:
+  DBURL:
+    Description: URL for the DB
+    Value: !GetAtt DB.Endpoint.Address
+    Export:
+      Name: !Sub ${AWS::StackName}-DBURL
+  DBName:
+    Description: URL for the DB
+    Value: !Sub ${Environment}postgres
+    Export:
+      Name: !Sub ${AWS::StackName}-DBName
+  DBPort:
+    Description: Port for the DB
+    Value: !GetAtt DB.Endpoint.Port
+    Export:
+      Name: !Sub ${AWS::StackName}-DBPort
+  DBUser:
+    Description: User for the DB
+    Value: !Ref DBUser
+    Export:
+      Name: !Sub ${AWS::StackName}-DBUser
