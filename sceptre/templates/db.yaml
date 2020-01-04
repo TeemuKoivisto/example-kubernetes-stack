@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Example app Postgres database
+Description: Minimial Postgres database
 
 Parameters:
   Project:

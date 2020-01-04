@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: ECS service for Example Nodejs app
+Description: DB migration task in ECS cluster with Flyway
 
 Parameters:
   Project:
@@ -11,38 +11,14 @@ Parameters:
     AllowedValues:
       - dev
       - prod
-  VpcId:
-    Description: VPC id
-    Type: String
-  1PublicSubnetId:
-    Description: Id of 1st Public SN
-    Type: String
-  2PublicSubnetId:
-    Description: Id of 2nd Public SN
-    Type: String
-  3PublicSubnetId:
-    Description: Id of 3rd Public SN
-    Type: String
-  AppSecurityGroupId:
-    Description: Id of Example app's security group
-    Type: String
-  ECSClusterName:
-    Description: Name of the ECS cluster
-    Type: String
-  ScalingRoleArn:
-    Description: ARN for the ECS cluster's scaling role
-    Type: String
-  PublicTargetGroupArn:
-    Description: ARN for the ECS cluster's public facing target group
-    Type: String
-  ExampleNodejsRepositoryUri:
+  MigrationRepositoryUri:
     Description: Example NodeJS app's repository URI
     Type: String
   ServiceName:
     Description: Name for the service to import values from its mappings
     Type: String
     AllowedValues:
-      - examplenodejs
+      - migration
   ImageTag:
     Description: Docker image tag for container
     Type: String
@@ -55,60 +31,29 @@ Parameters:
   DBURL:
     Description: DNS URL to the database eg example-app-dev-db.calmiqc5alov.eu-west-1.rds.amazonaws.com
     Type: String
+  MigrationChecksum:
+    Description: asdf
+    Type: String
 
 Mappings:
-  examplenodejs:
+  migration:
     CpuUnits:
       dev: '256'
     TaskMemory:
       dev: '0.5GB'
-    # Hard limit (in MiB) for container. If exceeded, the container is terminated
     ContainerMemory:
       dev: '500'
-    DesiredCount:
-      dev: '1'
-    MaxCapacity: 
-      dev: '2'
-    MinCapacity:
-      dev: '1'
-    TargetValue:
-      dev: '50'
   AppLogs:
+    # TODO same as in ecs-service.yaml 
+    # https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/162
     DeletionPolicy:
       dev: Delete
       prod: Retain
     RetentionDays:
       dev: 180
-      prod: 3653
+      prod: 180
 
 Resources:
-  Service:
-    Type: AWS::ECS::Service
-    Properties:
-      DesiredCount: !FindInMap [ !Ref ServiceName, DesiredCount, !Ref Environment ]
-      DeploymentConfiguration:
-        MaximumPercent: 200
-        MinimumHealthyPercent: 100
-      # DeploymentController:
-      #   Type: CODE_DEPLOY
-      Cluster: !Ref ECSClusterName
-      LaunchType: FARGATE
-      TaskDefinition: !Ref TaskDefinition
-      HealthCheckGracePeriodSeconds: 20
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED # Remove this if you want to use private subnets with NATs
-          SecurityGroups:
-            - !Ref AppSecurityGroupId
-          Subnets:
-            - !Ref 1PublicSubnetId # Should be private but oh well, no NATs this way
-            - !Ref 2PublicSubnetId
-            - !Ref 3PublicSubnetId
-      LoadBalancers:
-      - ContainerName: !Sub ${Environment}-${ServiceName}
-        ContainerPort: !Ref ApplicationPort
-        TargetGroupArn: !Ref PublicTargetGroupArn
-
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -122,7 +67,7 @@ Resources:
       Memory: !FindInMap [ !Ref ServiceName, TaskMemory, !Ref Environment ]
       ContainerDefinitions:
       - Name: !Sub ${Environment}-${ServiceName}
-        Image: !Sub ${ExampleNodejsRepositoryUri}:${ImageTag}
+        Image: !Sub ${MigrationRepositoryUri}:${ImageTag}
         PortMappings:
         - ContainerPort: !Ref ApplicationPort
         LogConfiguration:
@@ -155,8 +100,6 @@ Resources:
             Value: !Ref Environment
 
   ApplicationLogGroup:
-    # TODO waiting for https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/162
-    # DeletionPolicy: !FindInMap [ AppLogs, DeletionPolicy, !Ref Environment ]
     DeletionPolicy: Delete
     Type: AWS::Logs::LogGroup
     Properties:
@@ -204,36 +147,10 @@ Resources:
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
 
-  ServiceAutoScalingTarget:
-    Type: AWS::ApplicationAutoScaling::ScalableTarget
-    Properties:
-      MaxCapacity: !FindInMap [ !Ref ServiceName, MaxCapacity, !Ref Environment ]
-      MinCapacity: !FindInMap [ !Ref ServiceName, MinCapacity, !Ref Environment ]
-      ResourceId:
-        Fn::Sub:
-          - service/${ClusterName}/${ServiceName}
-          - ClusterName: !Ref ECSClusterName
-            ServiceName: !GetAtt Service.Name
-      RoleARN: !Ref ScalingRoleArn
-      ScalableDimension: ecs:service:DesiredCount
-      ServiceNamespace: ecs
-
-  ServiceCPUAutoScalingPolicy:
-    Type: AWS::ApplicationAutoScaling::ScalingPolicy
-    Properties:
-      PolicyName: !Sub ${Project}-${Environment}-${ServiceName}-CPUAutoScalingPolicy
-      PolicyType: TargetTrackingScaling
-      ScalingTargetId: !Ref ServiceAutoScalingTarget
-      TargetTrackingScalingPolicyConfiguration:
-        TargetValue: !FindInMap [ !Ref ServiceName, TargetValue, !Ref Environment ]
-        ScaleInCooldown: 60
-        ScaleOutCooldown: 60
-        PredefinedMetricSpecification: 
-          PredefinedMetricType: ECSServiceAverageCPUUtilization
-
-Outputs:
-  ECSServiceName:
-    Description: Official name of the ECS service
-    Value: !GetAtt Service.Name
-    Export:
-      Name: !Sub ${AWS::StackName}:ServiceName
+  MigrationChecksumParameter:
+    Type: AWS::SSM::Parameter
+    Properties: 
+      Description: Migration checksum used in cf-migrate.sh script
+      Name: !Sub /${Project}/${Environment}/migration-checksum
+      Type: String
+      Value: !Ref MigrationChecksum

@@ -4,7 +4,7 @@ parameters:
   Project: {{ project_code }}
   ExampleNodejsAppName: 'example-nodejs'
    # Change accordingly to the account where the stack is run, also in example-node-app's scripts
-  AllowedProdPullAccessAWSAccountId: '014750007983'
+  AllowedPullAccessAWSAccountId: '014750007983'
 stack_tags:
   Environment: {{ command_path.0 }}
   Project: {{ project_code }}

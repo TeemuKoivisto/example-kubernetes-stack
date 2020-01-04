@@ -1,0 +1,16 @@
+template_path: ecs-db-migration.yaml
+parameters:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}
+  MigrationRepositoryUri: !stack_output dev/eu-west-1/ecr.yaml::MigrationRepositoryUri
+  ServiceName: 'migration' # No dash (-) since mapping in ecs-service.yaml won't work otherwise
+  ImageTag: 'latest' # Initial version, updated manually (with cloudformation update) by each new deployment
+  ApplicationPort: '8600' # Not used
+  DBName: !stack_output dev/eu-west-1/db.yaml::DBName
+  DBURL: !stack_output dev/eu-west-1/db.yaml::DBURL
+  # Checksum generated from node-bootstrap migrations-folder, which is compared against in app deployments
+  # to see if the new migrations should be run. Prevents running migrations without anything to migrate
+  MigrationChecksum: 'na'
+stack_tags:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}
