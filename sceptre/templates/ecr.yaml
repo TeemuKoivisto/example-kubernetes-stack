@@ -19,7 +19,7 @@ Parameters:
 
 Resources:
   ExampleNodejsRepository:
-    DeletionPolicy: Delete
+    DeletionPolicy: Retain
     Type: AWS::ECR::Repository
     Properties:
       RepositoryName: !Sub ${Project}-${Environment}/${ExampleNodejsAppName}
@@ -44,7 +44,7 @@ Resources:
             - ecr:CompleteLayerUpload
 
   MigrationRepository:
-    DeletionPolicy: Delete
+    DeletionPolicy: Retain
     Type: AWS::ECR::Repository
     Properties:
       RepositoryName: !Sub ${Project}-${Environment}/migration

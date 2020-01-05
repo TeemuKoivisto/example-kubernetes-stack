@@ -3,9 +3,11 @@ parameters:
   Environment: {{ command_path.0 }}
   Project: {{ project_code }}
   VpcId: !stack_output dev/eu-west-1/vpc.yaml::VpcId
-  1PublicSubnetId: !stack_output dev/eu-west-1/vpc.yaml::1PublicSubnetId
-  2PublicSubnetId: !stack_output dev/eu-west-1/vpc.yaml::2PublicSubnetId
-  3PublicSubnetId: !stack_output dev/eu-west-1/vpc.yaml::3PublicSubnetId
+  # Change to Public SNs if you don't want NAT (eg you don't need RDS)
+  # and also "AssignPublicIp" inside the template to ENABLED
+  1PrivateSubnetId: !stack_output dev/eu-west-1/vpc.yaml::1PrivateSubnetId
+  2PrivateSubnetId: !stack_output dev/eu-west-1/vpc.yaml::2PrivateSubnetId
+  3PrivateSubnetId: !stack_output dev/eu-west-1/vpc.yaml::3PrivateSubnetId
   AppSecurityGroupId: !stack_output dev/eu-west-1/security-groups.yaml::AppSecurityGroupId
   ECSClusterName: !stack_output dev/eu-west-1/ecs-cluster.yaml::ClusterName
   ScalingRoleArn: !stack_output dev/eu-west-1/ecs-cluster.yaml::ScalingRoleArn

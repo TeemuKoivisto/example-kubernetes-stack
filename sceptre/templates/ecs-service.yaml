@@ -14,14 +14,14 @@ Parameters:
   VpcId:
     Description: VPC id
     Type: String
-  1PublicSubnetId:
-    Description: Id of 1st Public SN
+  1PrivateSubnetId:
+    Description: Id of 1st Private SN
     Type: String
-  2PublicSubnetId:
-    Description: Id of 2nd Public SN
+  2PrivateSubnetId:
+    Description: Id of 2nd Private SN
     Type: String
-  3PublicSubnetId:
-    Description: Id of 3rd Public SN
+  3PrivateSubnetId:
+    Description: Id of 3rd Private SN
     Type: String
   AppSecurityGroupId:
     Description: Id of Example app's security group
@@ -97,13 +97,13 @@ Resources:
       HealthCheckGracePeriodSeconds: 20
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: ENABLED # Remove this if you want to use private subnets with NATs
+          AssignPublicIp: DISABLED # Set to ENABLED if you don't want to use private subnets with NATs
           SecurityGroups:
             - !Ref AppSecurityGroupId
           Subnets:
-            - !Ref 1PublicSubnetId # Should be private but oh well, no NATs this way
-            - !Ref 2PublicSubnetId
-            - !Ref 3PublicSubnetId
+            - !Ref 1PrivateSubnetId
+            - !Ref 2PrivateSubnetId
+            - !Ref 3PrivateSubnetId
       LoadBalancers:
       - ContainerName: !Sub ${Environment}-${ServiceName}
         ContainerPort: !Ref ApplicationPort
