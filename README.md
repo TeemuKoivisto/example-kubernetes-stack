@@ -6,20 +6,6 @@ The two bootstrap projects are also the basic boilerplate I carry around from on
 * https://github.com/TeemuKoivisto/my-node-bootstrap
 * https://github.com/TeemuKoivisto/my-react-bootstrap
 
-**Table of Contents**
-
-<!-- toc -->
-- [Example Kubernetes Stack](#example-kubernetes-stack)
-  - [Prerequisites](#prerequisites)
-  - [How to install with minikube and kubectl](#how-to-install-with-minikube-and-kubectl)
-  - [Using kubectl and minikube](#using-kubectl-and-minikube)
-  - [How to install with Docker Compose](#how-to-install-with-docker-compose)
-  - [Using Docker Compose](#using-docker-compose)
-  - [TODO](#todo)
-  - [General](#general)
-  - [Helpful extensions for VSCode](#helpful-extensions-for-vscode)
-<!-- tocstop -->
-
 ## Introduction
 
 So there's 3 ways of deploying this stack. Depending on of course what you want to do, I recommend trying out the Docker Compose version first, then Kubernetes and lastly for real production deployment, Sceptre and CloudFormation.
@@ -28,13 +14,13 @@ The Docker Compose is somewhat legit way of locally running this type of basic s
 
 What I did here then, is create these stacks for local and production environments. As I mentioned Docker Compose is good for local development, as Kubernetes is sadly too complicated to invest time in unless you're really committed to using it in production also. I had the goal of turning this local Kubernetes setup into a similar Sceptre + CF stack as the ECS-one, but I probably won't have time for it. It's much easier to use ECS and I'm not really interested in moving out of AWS in the near future.
 
-That said, the current Sceptre + CF stack is a production-ready version of this whole thing, which you could in theory use to run your real-life application. I haven't gotten around making a real `prod`-version though, and the `dev`-version is mostly created with minimal cost in mind (1 NAT, minimal ECS tasks and DB instance). But it's ok and definitely enough for small apps. The cost of running using on-demand prices would be 18$ DB + 32$ NAT + x from ECS + y from S3,CloudWatch = ~50-60 * VAT (eg 24%) = 60-80$ depending on your load. Which is quite high for hobby projects, even with discounted reserved instance prices. So you probably should beg getting some sort of revenue 🤔. Yeah it's quite ridiculous price for some basic app, so maybe I'll be making some sort of Linode + AWS combo with as low costs as possible. I'll probably do it when I have my own app ready to launch.
+That said, the current Sceptre + CF stack is a production-ready version of this whole thing, which you could in theory use to run your real-life application. I haven't gotten around making a real `prod`-version though, and the `dev`-version is mostly created with minimal cost in mind (1 NAT, minimal ECS tasks and DB instance). But it's ok and definitely enough for small apps. The cost of running using on-demand prices would be 18$ DB + 32$ NAT + x from ECS + y from S3,CloudWatch = ~50-60 * VAT (eg 24%) = 60-80$ depending on your load. Which is quite high for hobby projects, even with discounted reserved instance prices. So you probably should put up some ads to pay the bills or something 🤔. Yeah it's quite ridiculous price for some basic app, so maybe I'll be making some sort of Linode + AWS combo with as low costs as possible. I'll probably do it when I have my own app ready to launch.
 
-If you are new to this stuff take your time. I know the information here is going to overwhelm you, but keep in mind that I built this whole thing over couple years (in maybe 3 different phases). So I've put some time into this! And you probably need too.
+If you are new to this stuff take your time. I know the information here is going to overwhelm you, but keep in mind that I built this whole thing over couple years (in maybe 3 different phases). So I've put some time into this! And you probably need too =).
 
-* [Docker](https://github.com/TeemuKoivisto/example-kubernetes-stack/DOCKER.md)
-* [k8s](https://github.com/TeemuKoivisto/example-kubernetes-stack/K8S.md)
-* [Sceptre + CF](https://github.com/TeemuKoivisto/example-kubernetes-stack/AWS.md)
+* [Docker](./DOCKER.md)
+* [k8s](./K8S.md)
+* [Sceptre + CF](./AWS.md)
 
 ## Helpful extensions for VSCode
 

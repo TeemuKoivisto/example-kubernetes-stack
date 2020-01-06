@@ -41,12 +41,19 @@ tunnel() {
 k8s-build() {
   eval $(minikube docker-env)
 
-  ./build-images.sh
+  cd my-react-bootstrap
+  ./local-build.sh
 
-  helm install --name my-nginx-ingress stable/nginx-ingress \
-    --set rbac.create=false --set rbac.createRole=false --set rbac.createClusterRole=false
+  cd ../my-node-bootstrap
+  ./local-build.sh
 
-  cd ./my-reverse-proxy
+  helm install stable/nginx-ingress \
+    --name my-nginx-ingress \
+    --set rbac.create=false \
+    --set rbac.createRole=false \
+    --set rbac.createClusterRole=false
+
+  cd ../my-reverse-proxy
   ./generate-key.sh "local"
 }
 

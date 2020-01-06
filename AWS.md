@@ -2,6 +2,11 @@
 
 The CloudFormation stacks for deploying the app with Sceptre on AWS.
 
+**Table of Contents**
+
+<!-- toc -->
+<!-- tocstop -->
+
 # Prerequisites
 
 Requires Python >= 3.5, aws-cli and Sceptre 2.x installed globally: `pip install aws-cli sceptre -U` (or `python3 -m pip install aws-cli sceptre -U` if you have different default Python eg. macOS).
@@ -108,3 +113,8 @@ Since the way CDNs work, you can only cache "real" URLs that access directly a r
 **Secret SSM paramaters (manual)**:
 * Manual stack for creating the JWT & DB credentials with user inputted values
 * Uses the previous custom resource
+
+# TODO
+
+* maybe instructions for adding domain with Route53?
+* SES and some type of error messages to email?
