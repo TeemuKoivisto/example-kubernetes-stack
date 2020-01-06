@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Custom CF resource for creating encrypted SSM parameters as a Lambda function
+
+Parameters:
+  Project:
+    Description: Name of the project
+    Type: String
+  Environment:
+    Description: Environment where the stack is launched
+    Type: String
+    AllowedValues:
+      - dev
+      - prod
+  LambdaCode:
+    Description: Code for the custom resource Lambda function
+    Type: String
+
+Resources:
+  CustomResourceSsmParameterLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: SsmFullAccess
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - ssm:PutParameter
+            - ssm:DescribeParameters
+            - ssm:GetParametersByPath
+            - ssm:GetParameters
+            - ssm:GetParameter
+            - ssm:DeleteParameter
+            - ssm:DeleteParameters
+            Resource: "*"
+      - PolicyName: CloudWatchCreatePutAccess
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: arn:aws:logs:*:*:*
+
+  CustomResourceSsmParameterLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Lambda as a custom resource for creating encrypted SSM parameters
+      Handler: index.handler
+      Runtime: python3.7
+      Role: !GetAtt CustomResourceSsmParameterLambdaExecutionRole.Arn
+      Timeout: 60
+      MemorySize: 128
+      Code:
+        ZipFile: !Ref LambdaCode
+
+Outputs:
+  CustomResourceSsmParameterLambdaArn:
+    Description: ARN of the custom resource encrypted SSM parameter lambda
+    Value: !GetAtt CustomResourceSsmParameterLambda.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-Custom-Resource-Ssm-Parameter-Lambda-Arn

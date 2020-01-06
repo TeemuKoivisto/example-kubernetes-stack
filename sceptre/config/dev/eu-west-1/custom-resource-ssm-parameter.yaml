@@ -1,0 +1,8 @@
+template_path: custom-resource-ssm-parameter.yaml
+parameters:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}
+  LambdaCode: !file_contents lambda-code/ssm-parameter.py
+stack_tags:
+  Environment: {{ command_path.0 }}
+  Project: {{ project_code }}

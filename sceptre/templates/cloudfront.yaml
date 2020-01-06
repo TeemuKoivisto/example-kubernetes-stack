@@ -12,10 +12,10 @@ Parameters:
       - dev
       - prod
   StaticBucketDomainName:
-    Description: Bucket domain name eg example-app-production-staticbucket-11blwnizvax5k.s3.amazonaws.com
+    Description: Bucket domain name eg example-app-dev-staticbucket-11blwnizvax5k.s3.amazonaws.com
     Type: String
   ECSClusterALBDNS:
-    Description: Domain name for the load-balancer of the ECS cluster eg example-app-production-alb-1633779076.eu-west-1.elb.amazonaws.com
+    Description: Domain name for the load-balancer of the ECS cluster eg example-app-dev-alb-1633779076.eu-west-1.elb.amazonaws.com
     Type: String
   CloudFrontOriginAccessIdentityId:
     Description: CloudFront access identity id for restricting bucket access to only this CF distribution

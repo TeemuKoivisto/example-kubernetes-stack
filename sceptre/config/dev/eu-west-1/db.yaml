@@ -7,8 +7,8 @@ parameters:
   2PrivateSubnetId: !stack_output dev/eu-west-1/vpc.yaml::2PrivateSubnetId
   3PrivateSubnetId: !stack_output dev/eu-west-1/vpc.yaml::3PrivateSubnetId
   DBSecurityGroupId: !stack_output dev/eu-west-1/security-groups.yaml::DBSecurityGroupId
-  DBUser: postgres
-  DBPassword: asdfasdf123
+  DBUser: !ssm_parameter /example-app/dev/db-user~true
+  DBPassword: !ssm_parameter /example-app/dev/db-password~true
   DBInstanceClass: db.t2.micro
 stack_tags:
   Environment: {{ command_path.0 }}
